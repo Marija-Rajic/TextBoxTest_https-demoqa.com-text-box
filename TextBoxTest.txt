@@ -1,0 +1,67 @@
+package tests;
+
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import com.github.javafaker.Faker;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.testng.Assert;
+import org.testng.annotations.AfterTest;
+import org.testng.annotations.DataProvider;
+import org.testng.annotations.Test;
+import pages.TextBox;
+
+import java.io.IOException;
+import java.time.Duration;
+
+public class TextBoxTest {
+
+    private WebDriver wd;
+    Faker faker;
+
+    @DataProvider(name = "testEmail")
+    public Object[][] testEmail() {
+        faker = new Faker();
+
+        return new Object[][] {
+                {faker.name().fullName(), "email@hotmail.com", faker.address().fullAddress(), faker.address().fullAddress()},
+                {faker.name().fullName(), "email@hotmail.com", faker.address().fullAddress(), faker.address().fullAddress()},
+                {faker.name().fullName(), "email@yahoo.com", faker.address().fullAddress(), faker.address().fullAddress()},
+                {faker.name().fullName(), "123123123123123123", faker.address().fullAddress(), faker.address().fullAddress()},
+                {faker.name().fullName(), "", faker.address().fullAddress(), faker.address().fullAddress()},
+                {"", "", "", ""}
+        };
+
+    }
+
+    @AfterTest
+    public void closeWebDriver() throws IOException {
+        wd.close();
+        System.out.println("Web driver closed");
+        Runtime.getRuntime().exec("taskkill /F /IM chromedriver.exe /T");
+    }
+
+    @Test(dataProvider = "testEmail")
+    public void testLoginEmail(String userName, String email, String currentAddess, String permanentAddess) {
+
+        System.setProperty("webdriver.chrome.driver",
+                "C:\\Users\\HP\\Desktop\\Programiranje\\chromeDriver\\chromedriver.exe");
+
+        wd = new ChromeDriver();
+
+        wd.manage().timeouts().implicitlyWait(Duration.ofSeconds(10));
+
+        wd.get("https://demoqa.com/text-box");
+        wd.manage().window().maximize();
+
+        TextBox textBoxPage = new TextBox(wd);
+
+        textBoxPage.enterUserName(userName);
+        textBoxPage.enterEmail(email);
+        textBoxPage.enterCurrentAddess(currentAddess);
+        textBoxPage.enterPermanentAddess(permanentAddess);
+        textBoxPage.clickSubmitButton();
+
+        Assert.assertTrue(wd.findElement(By.xpath("//div[@id='output']")).isDisplayed(),"Output box is displayed.");
+
+    }
+}
